@@ -13,6 +13,7 @@ import { useTheme } from 'vuetify'
 import { getNavMenus } from '@/router/i18n-menu'
 import { filterMenusByPermission } from '@/utils/permission'
 import type { ApiResponse } from '@/api/types'
+import { checkOAuthEnabled, startOAuthFlow, type OAuthProvider } from '@/api/oauth'
 
 // 国际化
 const { t } = useI18n()
@@ -85,6 +86,12 @@ let manualAbortController: AbortController | null = null
 
 // 标记当前是否有手动模式的 PassKey 请求正在进行
 let isManualPassKeyActive = false
+
+// OAuth 提供者信息
+const oauthProvider = ref<OAuthProvider | null>(null)
+
+// OAuth loading
+const oauthLoading = ref(false)
 
 // PassKey 认证核心函数 - 处理 WebAuthn 认证流程
 interface PassKeyAuthOptions {
@@ -464,6 +471,20 @@ async function verifyWithPassKey() {
   )
 }
 
+// OAuth SSO 登录
+async function loginWithOAuth() {
+  oauthLoading.value = true
+  errorMessage.value = ''
+  try {
+    const authUrl = await startOAuthFlow(authStore.originalPath || '/')
+    // 重定向到 OAuth 授权页面
+    window.location.href = authUrl
+  } catch (error: any) {
+    oauthLoading.value = false
+    errorMessage.value = error.message || t('login.oauthLoginFailed')
+  }
+}
+
 // 自动登录
 onMounted(async () => {
   // 获取token和remember状态
@@ -476,12 +497,28 @@ onMounted(async () => {
     return
   }
 
+  // 检查 OAuth 是否启用
+  const oauthStatus = await checkOAuthEnabled()
+  if (oauthStatus.enabled && oauthStatus.provider) {
+    oauthProvider.value = oauthStatus.provider
+  }
+
   // 初始化 Conditional UI 的 PassKey 自动填充
   await initConditionalPasskey()
 })
 
+// 判断是否启用 PassKey
+const isPasskeyEnabled = computed(() => {
+  return globalSettingsStore.globalSettings?.AUTH_PASSKEY_ENABLE !== false
+})
+
 // 初始化 Conditional UI 的 PassKey 自动填充
 async function initConditionalPasskey() {
+  // 检查是否启用 PassKey
+  if (!isPasskeyEnabled.value) {
+    return
+  }
+
   // 检查浏览器是否支持 WebAuthn 和 Conditional UI
   if (!window.PublicKeyCredential || !PublicKeyCredential.isConditionalMediationAvailable) {
     return
@@ -615,6 +652,7 @@ onUnmounted(() => {
                 </VBtn>
                 <!-- passkey login button -->
                 <VBtn
+                  v-if="isPasskeyEnabled"
                   block
                   variant="tonal"
                   color="success"
@@ -625,6 +663,21 @@ onUnmounted(() => {
                 >
                   {{ t('login.loginWithPasskey') }}
                 </VBtn>
+                
+                <!-- SSO 登录按钮 -->
+                <VBtn
+                  v-if="oauthProvider"
+                  block
+                  variant="tonal"
+                  color="primary"
+                  class="mt-3"
+                  prepend-icon="mdi-shield-account"
+                  :loading="oauthLoading"
+                  @click="loginWithOAuth"
+                >
+                  {{ t('login.loginWithSSO', { provider: oauthProvider.name }) }}
+                </VBtn>
+                
                 <VAlert v-if="errorMessage" type="error" variant="tonal" class="mt-3">
                   {{ errorMessage }}
                 </VAlert>

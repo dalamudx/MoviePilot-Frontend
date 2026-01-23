@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { configureNProgress } from '@/api/nprogress'
 import { useAuthStore } from '@/stores'
 import { setNavigatingState as setRequestNavigatingState } from '@/utils/requestOptimizer'
@@ -8,7 +8,7 @@ configureNProgress()
 
 // Router
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to: any, from: any, savedPosition: any) {
     // 如果页面有缓存那么恢复其位置, 否则始终滚动到顶部
     if (to.meta.keepAlive && savedPosition) return savedPosition
@@ -207,6 +207,10 @@ const router = createRouter({
         {
           path: 'login',
           component: () => import('../pages/login.vue'),
+        },
+        {
+          path: 'oauth/callback',
+          component: () => import('../pages/oauth-callback.vue'),
         },
         {
           path: 'setup-wizard',
