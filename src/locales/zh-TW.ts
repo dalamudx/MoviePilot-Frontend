@@ -1293,6 +1293,9 @@ export default {
       llmProviderHint: '選擇使用的LLM服務提供商',
       llmModel: 'LLM模型名稱',
       llmModelHint: '指定使用的LLM模型，如gpt-3.5-turbo、deepseek-chat等',
+      llmMaxContextTokens: 'LLM 最大上下文 Token 數量 (K)',
+      llmMaxContextTokensHint:
+        '設定 LLM 記錄會話歷史的最大 Token 數量上限（千），超出後將自動修整歷史記錄以節省 Token 消耗及防止超出 LLM 限制',
       llmApiKey: 'LLM API密鑰',
       llmApiKeyHint: 'LLM服務提供商的API密鑰，用於身份驗證',
       llmApiKeyPlaceholder: '請輸入API密鑰',
@@ -2625,7 +2628,8 @@ export default {
     passkeyManagement: '通行密鑰管理',
     registerNewPasskey: '註冊新通行密鑰',
     passkeyDescription: '通行密鑰可以讓您無需密碼即可快速安全地登入。',
-    passkeyAppDescription: '通行密鑰是一種更簡單、更安全的登入方式，可以替代密碼進行登入。您可以使用 iCloud 鑰匙圈、Bitwarden 等支援通行密鑰的應用程式或硬體金鑰完成驗證。',
+    passkeyAppDescription:
+      '通行密鑰是一種更簡單、更安全的登入方式，可以替代密碼進行登入。您可以使用 iCloud 鑰匙圈、Bitwarden 等支援通行密鑰的應用程式或硬體金鑰完成驗證。',
     passkeyName: '通行密鑰名稱',
     passkeyNamePlaceholder: '例如：iPhone、Windows Hello',
     registerPasskey: '註冊通行密鑰',

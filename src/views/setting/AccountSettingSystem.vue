@@ -40,6 +40,7 @@ const SystemSettings = ref<any>({
     AI_RECOMMEND_ENABLED: false,
     AI_RECOMMEND_USER_PREFERENCE: null,
     AI_RECOMMEND_MAX_ITEMS: 50,
+    LLM_MAX_CONTEXT_TOKENS: 64,
   },
   // 高级系统设置
   Advanced: {
@@ -676,11 +677,19 @@ onDeactivated(() => {
             </VRow>
             <VDivider class="my-4" />
             <VRow>
-              <VCol cols="12">
+              <VCol cols="12" md="6">
                 <VSwitch
                   v-model="SystemSettings.Basic.AI_AGENT_ENABLE"
                   :label="t('setting.system.aiAgentEnable')"
                   :hint="t('setting.system.aiAgentEnableHint')"
+                  persistent-hint
+                />
+              </VCol>
+              <VCol v-if="SystemSettings.Basic.AI_AGENT_ENABLE" cols="12" md="6">
+                <VSwitch
+                  v-model="SystemSettings.Basic.AI_AGENT_GLOBAL"
+                  :label="t('setting.system.aiAgentGlobal')"
+                  :hint="t('setting.system.aiAgentGlobalHint')"
                   persistent-hint
                 />
               </VCol>
@@ -742,14 +751,16 @@ onDeactivated(() => {
                 </VCombobox>
               </VCol>
               <VCol v-if="SystemSettings.Basic.AI_AGENT_ENABLE" cols="12" md="6">
-                <VSwitch
-                  v-model="SystemSettings.Basic.AI_AGENT_GLOBAL"
-                  :label="t('setting.system.aiAgentGlobal')"
-                  :hint="t('setting.system.aiAgentGlobalHint')"
+                <VTextField
+                  v-model.number="SystemSettings.Basic.LLM_MAX_CONTEXT_TOKENS"
+                  :label="t('setting.system.llmMaxContextTokens')"
+                  :hint="t('setting.system.llmMaxContextTokensHint')"
                   persistent-hint
+                  type="number"
+                  prepend-inner-icon="mdi-counter"
                 />
               </VCol>
-              <VCol v-if="SystemSettings.Basic.AI_AGENT_ENABLE" cols="12" md="6">
+              <VCol v-if="SystemSettings.Basic.AI_AGENT_ENABLE" cols="12">
                 <VSwitch
                   v-model="SystemSettings.Basic.AI_RECOMMEND_ENABLED"
                   :label="t('setting.system.aiRecommendEnabled')"
@@ -757,7 +768,11 @@ onDeactivated(() => {
                   persistent-hint
                 />
               </VCol>
-              <VCol v-if="SystemSettings.Basic.AI_AGENT_ENABLE && SystemSettings.Basic.AI_RECOMMEND_ENABLED" cols="12">
+              <VCol
+                v-if="SystemSettings.Basic.AI_AGENT_ENABLE && SystemSettings.Basic.AI_RECOMMEND_ENABLED"
+                cols="12"
+                md="6"
+              >
                 <VTextarea
                   v-model="SystemSettings.Basic.AI_RECOMMEND_USER_PREFERENCE"
                   :label="t('setting.system.aiRecommendUserPreference')"
@@ -1619,7 +1634,10 @@ onDeactivated(() => {
                     min="1"
                     type="number"
                     :suffix="t('setting.system.mb')"
-                    :rules="[(v: any) => v === 0 || !!v || t('setting.system.logMaxFileSizeRequired'), (v: any) => v >= 1 || t('setting.system.logMaxFileSizeMin')]"
+                    :rules="[
+                      (v: any) => v === 0 || !!v || t('setting.system.logMaxFileSizeRequired'),
+                      (v: any) => v >= 1 || t('setting.system.logMaxFileSizeMin'),
+                    ]"
                     prepend-inner-icon="mdi-file-document"
                   />
                 </VCol>
@@ -1631,7 +1649,10 @@ onDeactivated(() => {
                     persistent-hint
                     min="1"
                     type="number"
-                    :rules="[(v: any) => v === 0 || !!v || t('setting.system.logBackupCountRequired'), (v: any) => v >= 1 || t('setting.system.logBackupCountMin')]"
+                    :rules="[
+                      (v: any) => v === 0 || !!v || t('setting.system.logBackupCountRequired'),
+                      (v: any) => v >= 1 || t('setting.system.logBackupCountMin'),
+                    ]"
                     prepend-inner-icon="mdi-backup-restore"
                   />
                 </VCol>
