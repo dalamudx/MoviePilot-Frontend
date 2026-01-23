@@ -328,7 +328,6 @@ async function loadSystemSettings() {
           if (result.data.hasOwnProperty(key)) (SystemSettings.value[sectionKey] as any)[key] = result.data[key]
         })
       }
-      await loadAuthSetting()
     }
   } catch (error) {
     console.log(error)
@@ -351,37 +350,7 @@ async function saveSystemSetting(value: { [key: string]: any }) {
   return false
 }
 
-// 调用API查询认证设置
-async function loadAuthSetting() {
-  try {
-    const result: { [key: string]: any } = await api.get('system/setting/SystemAuth')
-    if (result.success && result.data?.value) {
-      const authData = result.data.value
-      // 合并到 SystemSettings.Auth
-      Object.keys(SystemSettings.value.Auth).forEach((key: string) => {
-        if (authData.hasOwnProperty(key)) (SystemSettings.value.Auth as any)[key] = authData[key]
-      })
-    }
-  } catch (error) {
-    console.log(error)
-  }
-}
 
-// 调用API保存认证设置
-async function saveAuthSetting(value: { [key: string]: any }) {
-  try {
-    const result: { [key: string]: any } = await api.post('system/setting/SystemAuth', value)
-    if (result.success) {
-      return true
-    } else {
-      $toast.error(t('setting.system.saveFailed', { message: result?.message }))
-      return false
-    }
-  } catch (error) {
-    console.log(error)
-  }
-  return false
-}
 
 // 保存基础设置
 async function saveBasicSettings() {
@@ -392,7 +361,7 @@ async function saveBasicSettings() {
 
 // 保存认证设置
 async function saveAuthSettings() {
-  if (await saveAuthSetting(SystemSettings.value.Auth)) {
+  if (await saveSystemSetting(SystemSettings.value.Auth)) {
     $toast.success(t('setting.system.authSaveSuccess'))
   }
 }
