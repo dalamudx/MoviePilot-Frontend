@@ -87,6 +87,26 @@ const SystemSettings = ref<any>({
     ENCODING_DETECTION_PERFORMANCE_MODE: true,
     TRANSFER_THREADS: 1,
   },
+  // 认证设置
+  Auth: {
+    AUTH_PASSKEY_ENABLE: true,
+    OAUTH_ENABLE: false,
+    OAUTH_CLIENT_ID: null,
+    OAUTH_CLIENT_SECRET: null,
+    OAUTH_AUTHORIZATION_ENDPOINT: null,
+    OAUTH_TOKEN_ENDPOINT: null,
+    OAUTH_USERINFO_ENDPOINT: null,
+    OAUTH_REDIRECT_URI: null,
+    OAUTH_SCOPE: 'openid profile email',
+    OAUTH_PROVIDER_TYPE: 'oidc',
+    OAUTH_PROVIDER_NAME: 'SSO',
+    OAUTH_USERNAME_FIELD: 'preferred_username',
+    OAUTH_AUTO_CREATE_USER: true,
+    OAUTH_NEW_USER_PERMISSIONS: 'search,discovery,subscribe',
+    OAUTH_SYNC_EMAIL: true,
+    OAUTH_SYNC_AVATAR: false,
+    OAUTH_AVATAR_FIELD: 'picture',
+  },
 })
 
 // 刮削配置
@@ -308,6 +328,7 @@ async function loadSystemSettings() {
           if (result.data.hasOwnProperty(key)) (SystemSettings.value[sectionKey] as any)[key] = result.data[key]
         })
       }
+      await loadAuthSetting()
     }
   } catch (error) {
     console.log(error)
@@ -330,10 +351,49 @@ async function saveSystemSetting(value: { [key: string]: any }) {
   return false
 }
 
+// 调用API查询认证设置
+async function loadAuthSetting() {
+  try {
+    const result: { [key: string]: any } = await api.get('system/setting/SystemAuth')
+    if (result.success && result.data?.value) {
+      const authData = result.data.value
+      // 合并到 SystemSettings.Auth
+      Object.keys(SystemSettings.value.Auth).forEach((key: string) => {
+        if (authData.hasOwnProperty(key)) (SystemSettings.value.Auth as any)[key] = authData[key]
+      })
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+// 调用API保存认证设置
+async function saveAuthSetting(value: { [key: string]: any }) {
+  try {
+    const result: { [key: string]: any } = await api.post('system/setting/SystemAuth', value)
+    if (result.success) {
+      return true
+    } else {
+      $toast.error(t('setting.system.saveFailed', { message: result?.message }))
+      return false
+    }
+  } catch (error) {
+    console.log(error)
+  }
+  return false
+}
+
 // 保存基础设置
 async function saveBasicSettings() {
   if (await saveSystemSetting(SystemSettings.value.Basic)) {
     $toast.success(t('setting.system.basicSaveSuccess'))
+  }
+}
+
+// 保存认证设置
+async function saveAuthSettings() {
+  if (await saveAuthSetting(SystemSettings.value.Auth)) {
+    $toast.success(t('setting.system.authSaveSuccess'))
   }
 }
 
@@ -868,6 +928,182 @@ onDeactivated(() => {
               </VBtn>
             </div>
           </VForm>
+        </VCardText>
+      </VCard>
+    </VCol>
+  </VRow>
+  <VRow>
+    <VCol cols="12">
+      <VCard>
+        <VCardItem>
+          <VCardTitle>{{ t('setting.system.authSettings') }}</VCardTitle>
+          <VCardSubtitle>{{ t('setting.system.authSettingsDesc') }}</VCardSubtitle>
+        </VCardItem>
+        <VCardText>
+          <VSwitch
+            v-model="SystemSettings.Auth.AUTH_PASSKEY_ENABLE"
+            :label="t('setting.system.authPasskeyEnable')"
+            :hint="t('setting.system.authPasskeyEnableHint')"
+            persistent-hint
+            class="mb-4"
+          />
+          <VSwitch
+            v-model="SystemSettings.Auth.OAUTH_ENABLE"
+            :label="t('setting.system.authEnable')"
+            hide-details
+          />
+        </VCardText>
+        <VExpandTransition>
+          <VCardText v-show="SystemSettings.Auth.OAUTH_ENABLE">
+          <VDivider class="mb-5" />
+          <VForm @submit.prevent="() => {}">
+            <VRow>
+              <VCol cols="12" md="6">
+                <VSelect
+                  v-model="SystemSettings.Auth.OAUTH_PROVIDER_TYPE"
+                  :label="t('setting.system.authProviderType')"
+                  :items="[
+                    { title: 'OIDC', value: 'oidc' },
+                    { title: 'OAuth2', value: 'oauth2' },
+                  ]"
+                  prepend-inner-icon="mdi-shield-account"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_PROVIDER_NAME"
+                  :label="t('setting.system.authProviderName')"
+                  :hint="t('setting.system.authProviderNameHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-label"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_CLIENT_ID"
+                  :label="t('setting.system.authClientId')"
+                  :hint="t('setting.system.authClientIdHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-identifier"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_CLIENT_SECRET"
+                  :label="t('setting.system.authClientSecret')"
+                  type="password"
+                  :hint="t('setting.system.authClientSecretHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-lock"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_AUTHORIZATION_ENDPOINT"
+                  :label="t('setting.system.authAuthorizationEndpoint')"
+                  :hint="t('setting.system.authAuthorizationEndpointHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-link"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_TOKEN_ENDPOINT"
+                  :label="t('setting.system.authTokenEndpoint')"
+                  :hint="t('setting.system.authTokenEndpointHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-link-variant"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_USERINFO_ENDPOINT"
+                  :label="t('setting.system.authUserinfoEndpoint')"
+                  :hint="t('setting.system.authUserinfoEndpointHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-account-details"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_REDIRECT_URI"
+                  :label="t('setting.system.authRedirectUri')"
+                  :hint="t('setting.system.authRedirectUriHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-subdirectory-arrow-left"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_SCOPE"
+                  :label="t('setting.system.authScope')"
+                  :hint="t('setting.system.authScopeHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-format-list-checks"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_USERNAME_FIELD"
+                  :label="t('setting.system.authUsernameField')"
+                  :hint="t('setting.system.authUsernameFieldHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-account-tag"
+                />
+              </VCol>
+               <VCol cols="12" md="6">
+                 <VTextField
+                   v-model="SystemSettings.Auth.OAUTH_NEW_USER_PERMISSIONS"
+                   :label="t('setting.system.authNewUserPermissions')"
+                   :hint="t('setting.system.authNewUserPermissionsHint')"
+                   persistent-hint
+                   prepend-inner-icon="mdi-shield-plus"
+                 />
+               </VCol>
+               <VCol cols="12" md="6">
+                <VTextField
+                  v-model="SystemSettings.Auth.OAUTH_AVATAR_FIELD"
+                  :label="t('setting.system.authAvatarField')"
+                  :hint="t('setting.system.authAvatarFieldHint')"
+                  persistent-hint
+                  prepend-inner-icon="mdi-account-circle"
+                />
+               </VCol>
+               <VCol cols="12" md="6">
+                 <VSwitch
+                   v-model="SystemSettings.Auth.OAUTH_AUTO_CREATE_USER"
+                   :label="t('setting.system.authAutoCreateUser')"
+                   :hint="t('setting.system.authAutoCreateUserHint')"
+                   persistent-hint
+                 />
+               </VCol>
+               <VCol cols="12" md="6">
+                 <VSwitch
+                   v-model="SystemSettings.Auth.OAUTH_SYNC_EMAIL"
+                   :label="t('setting.system.authSyncEmail')"
+                   :hint="t('setting.system.authSyncEmailHint')"
+                   persistent-hint
+                 />
+               </VCol>
+               <VCol cols="12" md="6">
+                 <VSwitch
+                   v-model="SystemSettings.Auth.OAUTH_SYNC_AVATAR"
+                   :label="t('setting.system.authSyncAvatar')"
+                   :hint="t('setting.system.authSyncAvatarHint')"
+                   persistent-hint
+                 />
+               </VCol>
+
+            </VRow>
+          </VForm>
+        </VCardText>
+        </VExpandTransition>
+        <VCardText>
+          <div class="d-flex flex-wrap gap-4 mt-4">
+            <VBtn @click="saveAuthSettings" prepend-icon="mdi-content-save">
+              {{ t('common.save') }}
+            </VBtn>
+          </div>
         </VCardText>
       </VCard>
     </VCol>
