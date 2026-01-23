@@ -33,7 +33,9 @@ export const useUserStore = defineStore('user', {
       this.level = level
     },
     setPermissions(permissions: object) {
-      this.permissions = { ...DEFAULT_PERMISSIONS, ...permissions }
+      // 安全默认值：默认全部关闭，仅开启后端明确返回 true 的权限
+      const basePermissions = { discovery: false, search: false, subscribe: false, manage: false }
+      this.permissions = { ...basePermissions, ...permissions }
     },
     setWizard(wizard: boolean) {
       this.wizard = wizard
