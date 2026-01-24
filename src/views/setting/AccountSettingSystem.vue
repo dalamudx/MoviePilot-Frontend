@@ -322,6 +322,21 @@ async function saveSystemSetting(value: { [key: string]: any }) {
 
 
 
+// 调用API保存认证设置
+async function saveAuthSetting(value: { [key: string]: any }) {
+  try {
+    const result: { [key: string]: any } = await api.post('system/setting/SystemAuth', value)
+    if (result.success) {
+      return true
+    } else {
+      $toast.error(t('setting.system.saveFailed', { message: result?.message }))
+      return false
+    }
+  } catch (error) {
+    console.log(error)
+  }
+  return false
+}
 // 保存基础设置
 async function saveBasicSettings() {
   if (await saveSystemSetting(SystemSettings.value.Basic)) {
@@ -331,7 +346,7 @@ async function saveBasicSettings() {
 
 // 保存认证设置
 async function saveAuthSettings() {
-  if (await saveSystemSetting(SystemSettings.value.Auth)) {
+  if (await saveAuthSetting(SystemSettings.value.Auth)) {
     $toast.success(t('setting.system.authSaveSuccess'))
   }
 }
