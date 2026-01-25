@@ -272,6 +272,8 @@ export interface MediaInfo {
   vote_average?: number
   // 描述
   overview?: string
+  // 自定义剧集组
+  episode_group?: string
   // 二级分类
   category?: string
   // 详情页面
@@ -1445,4 +1447,19 @@ export interface ApiResponse<T = any> {
   success: boolean
   message?: string
   data: T
+}
+
+// 分类规则
+export interface CategoryRule {
+  genre_ids?: string
+  original_language?: string
+  production_countries?: string
+  origin_country?: string
+  release_year?: string
+}
+
+// 分类配置
+export interface CategoryConfig {
+  movie?: { [key: string]: CategoryRule }
+  tv?: { [key: string]: CategoryRule }
 }
