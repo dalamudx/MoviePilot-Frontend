@@ -86,13 +86,13 @@ const SystemSettings = ref<any>({
   // 认证设置
   Auth: {
     AUTH_PASSKEY_ENABLE: true,
+    AUTH_BASIC_ENABLE: true,
     OAUTH_ENABLE: false,
     OAUTH_CLIENT_ID: null,
     OAUTH_CLIENT_SECRET: null,
     OAUTH_AUTHORIZATION_ENDPOINT: null,
     OAUTH_TOKEN_ENDPOINT: null,
     OAUTH_USERINFO_ENDPOINT: null,
-    OAUTH_REDIRECT_URI: null,
     OAUTH_SCOPE: 'openid profile email',
     OAUTH_PROVIDER_TYPE: 'oidc',
     OAUTH_PROVIDER_NAME: 'SSO',
@@ -507,6 +507,16 @@ const moviePilotAutoUpdate = computed({
   },
 })
 
+// OAuth Redirect URI (只读显示)
+const oauthRedirectUri = computed(() => {
+  const appDomain = SystemSettings.value.Basic.APP_DOMAIN
+  if (!appDomain) return ''
+  const domain = appDomain.endsWith('/') ? appDomain.slice(0, -1) : appDomain
+  return `${domain}/oauth/callback`
+})
+
+
+
 // Fanart语言多选处理
 const fanartLanguageSelection = computed({
   get: () => {
@@ -853,10 +863,23 @@ onDeactivated(() => {
             class="mb-4"
           />
           <VSwitch
-            v-model="SystemSettings.Auth.OAUTH_ENABLE"
-            :label="t('setting.system.authEnable')"
-            hide-details
+            v-model="SystemSettings.Auth.AUTH_BASIC_ENABLE"
+            :label="t('setting.system.authBasicEnable')"
+            :hint="t('setting.system.authBasicEnableHint')"
+            persistent-hint
+            class="mb-4"
           />
+          <div class="d-flex align-center flex-wrap">
+            <VSwitch
+              v-model="SystemSettings.Auth.OAUTH_ENABLE"
+              :label="t('setting.system.authEnable')"
+              hide-details
+              class="me-4"
+            />
+            <div v-if="SystemSettings.Auth.OAUTH_ENABLE" class="text-caption text-grey mt-2 mt-sm-0 ms-4">
+              {{ t('setting.system.authRedirectUri') }}：{{ oauthRedirectUri }}
+            </div>
+          </div>
         </VCardText>
         <VExpandTransition>
           <VCardText v-show="SystemSettings.Auth.OAUTH_ENABLE">
@@ -929,15 +952,7 @@ onDeactivated(() => {
                   prepend-inner-icon="mdi-account-details"
                 />
               </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model="SystemSettings.Auth.OAUTH_REDIRECT_URI"
-                  :label="t('setting.system.authRedirectUri')"
-                  :hint="t('setting.system.authRedirectUriHint')"
-                  persistent-hint
-                  prepend-inner-icon="mdi-subdirectory-arrow-left"
-                />
-              </VCol>
+
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="SystemSettings.Auth.OAUTH_SCOPE"

@@ -512,6 +512,11 @@ const isPasskeyEnabled = computed(() => {
   return globalSettingsStore.globalSettings?.AUTH_PASSKEY_ENABLE !== false
 })
 
+// 判断是否启用内置 Basic 认证
+const isBasicAuthEnabled = computed(() => {
+  return globalSettingsStore.globalSettings?.AUTH_BASIC_ENABLE !== false
+})
+
 // 初始化 Conditional UI 的 PassKey 自动填充
 async function initConditionalPasskey() {
   // 检查是否启用 PassKey
@@ -610,46 +615,54 @@ onUnmounted(() => {
         <VCardText>
           <VForm ref="refForm" autocomplete="on" @submit.prevent="login">
             <VRow>
-              <!-- username -->
-              <VCol cols="12">
-                <VTextField
-                  ref="usernameInput"
-                  v-model="form.username"
-                  :label="t('login.username')"
-                  type="text"
-                  name="username"
-                  id="username"
-                  autocomplete="username webauthn"
-                  :rules="[requiredValidator]"
-                  hide-details
-                />
+              <template v-if="isBasicAuthEnabled">
+                <!-- username -->
+                <VCol cols="12">
+                  <VTextField
+                    ref="usernameInput"
+                    v-model="form.username"
+                    :label="t('login.username')"
+                    type="text"
+                    name="username"
+                    id="username"
+                    autocomplete="username webauthn"
+                    :rules="[requiredValidator]"
+                    hide-details
+                  />
+                </VCol>
+                <!-- password -->
+                <VCol cols="12">
+                  <VTextField
+                    v-model="form.password"
+                    :label="t('login.password')"
+                    :type="isPasswordVisible ? 'text' : 'password'"
+                    name="password"
+                    id="password"
+                    autocomplete="current-password"
+                    :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
+                    :rules="[requiredValidator]"
+                    hide-details
+                    @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <!-- remember me checkbox -->
+                  <div class="d-flex align-center justify-space-between flex-wrap">
+                    <VCheckbox v-model="form.remember" :label="t('login.stayLoggedIn')" required />
+                  </div>
+                </VCol>
+                <VCol cols="12">
+                  <!-- login button -->
+                  <VBtn block type="submit" prepend-icon="mdi-login" :loading="loading">
+                    {{ t('login.login') }}
+                  </VBtn>
+                </VCol>
+              </template>
+              <VCol v-else cols="12">
+                <!-- minimal spacing when basic auth is disabled -->
               </VCol>
-              <!-- password -->
+              
               <VCol cols="12">
-                <VTextField
-                  v-model="form.password"
-                  :label="t('login.password')"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  name="password"
-                  id="password"
-                  autocomplete="current-password"
-                  :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-                  :rules="[requiredValidator]"
-                  hide-details
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
-              </VCol>
-              <VCol cols="12">
-                <!-- remember me checkbox -->
-                <div class="d-flex align-center justify-space-between flex-wrap">
-                  <VCheckbox v-model="form.remember" :label="t('login.stayLoggedIn')" required />
-                </div>
-              </VCol>
-              <VCol cols="12">
-                <!-- login button -->
-                <VBtn block type="submit" prepend-icon="mdi-login" :loading="loading">
-                  {{ t('login.login') }}
-                </VBtn>
                 <!-- passkey login button -->
                 <VBtn
                   v-if="isPasskeyEnabled"
