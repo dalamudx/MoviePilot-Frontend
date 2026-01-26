@@ -1346,7 +1346,7 @@ export default {
       authPasskeyEnable: '启用通行密钥',
       authBasicEnable: '启用内置认证',
       authBasicEnableHint: '控制登录页系统内置认证组件的显示',
-      authPasskeyEnableHint: '显示通行密钥(Passkey)登录按钮',
+      authPasskeyEnableHint: '控制登录页通行密钥的显示',
       authSettings: '认证设置',
       authSettingsDesc: '设置登录相关功能',
       authEnable: '启用单点登录',

@@ -1351,7 +1351,7 @@ export default {
       authPasskeyEnable: 'Enable Passkey',
       authBasicEnable: 'Enable Built-in Auth',
       authBasicEnableHint: 'Controls the display of the built-in authentication component on the login page',
-      authPasskeyEnableHint: 'Show Passkey login button',
+      authPasskeyEnableHint: 'Controls the display of Passkey on the login page',
       authSettings: 'Auth Settings',
       authSettingsDesc: 'Configure login related functions',
       authEnable: 'Enable SSO',
