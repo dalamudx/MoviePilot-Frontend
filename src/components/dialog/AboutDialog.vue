@@ -4,9 +4,21 @@ import api from '@/api'
 import { clearCachesAndServiceWorker, reloadWithTimestamp } from '@/composables/useVersionChecker'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
+import MarkdownIt from 'markdown-it'
 
 // 国际化
 const { t } = useI18n()
+
+// Markdown 实例
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  breaks: true,
+  typographer: true,
+})
+
+// 禁用模糊链接（防止将文件名识别为链接）
+md.linkify.set({ fuzzyLink: false })
 
 // APP版本
 const appVersion = __APP_VERSION__
@@ -70,7 +82,7 @@ const releaseDialogBody = ref('')
 // 打开日志对话框
 function showReleaseDialog(title: string, body: string) {
   releaseDialogTitle.value = title
-  releaseDialogBody.value = body.replaceAll('\r\n', '<br />')
+  releaseDialogBody.value = md.render(body || '')
   releaseDialog.value = true
 }
 
@@ -393,7 +405,9 @@ onMounted(() => {
           <VDialogCloseBtn @click="releaseDialog = false" />
           <VCardTitle>{{ releaseDialogTitle }} {{ t('setting.about.changelog') }}</VCardTitle>
         </VCardItem>
-        <VCardText v-html="releaseDialogBody" />
+        <VCardText>
+          <div class="markdown-body" v-html="releaseDialogBody"></div>
+        </VCardText>
       </VCard>
     </VDialog>
   </VDialog>
@@ -410,5 +424,102 @@ onMounted(() => {
 
 .section {
   margin-block: 0.5rem 2.5rem;
+}
+
+/* Markdown Styles */
+:deep(.markdown-body) {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+:deep(.markdown-body h1),
+:deep(.markdown-body h2),
+:deep(.markdown-body h3) {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+:deep(.markdown-body h1) {
+  padding-bottom: 0.3em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--v-border-color);
+}
+
+:deep(.markdown-body h2) {
+  padding-bottom: 0.3em;
+  font-size: 1.25em;
+  border-bottom: 1px solid var(--v-border-color);
+}
+
+:deep(.markdown-body h3) {
+  font-size: 1.1em;
+}
+
+:deep(.markdown-body p) {
+  margin-bottom: 1em;
+}
+
+:deep(.markdown-body ul),
+:deep(.markdown-body ol) {
+  padding-left: 2em;
+  margin-bottom: 1em;
+}
+
+:deep(.markdown-body ul) {
+  list-style-type: disc;
+}
+
+:deep(.markdown-body ol) {
+  list-style-type: decimal;
+}
+
+:deep(.markdown-body li) {
+  margin-bottom: 0.25em;
+}
+
+:deep(.markdown-body a) {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
+:deep(.markdown-body a:hover) {
+  text-decoration: underline;
+}
+
+:deep(.markdown-body code) {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-family: monospace;
+  font-size: 85%;
+  background-color: rgba(var(--v-theme-on-surface), 10%);
+  border-radius: 3px;
+}
+
+:deep(.markdown-body pre) {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: rgba(var(--v-theme-on-surface), 5%);
+  border-radius: 6px;
+}
+
+:deep(.markdown-body pre code) {
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+  white-space: pre;
+  word-break: normal;
+  background: transparent;
+  border: 0;
+}
+
+:deep(.markdown-body blockquote) {
+  padding: 0 1em;
+  margin-bottom: 1em;
+  color: rgba(var(--v-theme-on-surface), 70%);
+  border-left: 0.25em solid rgba(var(--v-theme-on-surface), 20%);
 }
 </style>
