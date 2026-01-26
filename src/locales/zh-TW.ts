@@ -1401,7 +1401,7 @@ export default {
       authPasskeyEnable: '啟用通行密鑰',
       authBasicEnable: '啟用內置認證',
       authBasicEnableHint: '控制登錄頁系統內置認證組件的顯示',
-      authPasskeyEnableHint: '顯示通行密鑰(Passkey)登錄按鈕',
+      authPasskeyEnableHint: '控制登錄頁通行密鑰的顯示',
       authSettings: '認證設置',
       authSettingsDesc: '設置登錄相關功能',
       authEnable: '啟用單點登錄',

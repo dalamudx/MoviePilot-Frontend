@@ -23,8 +23,12 @@ const display = useDisplay()
 const md = new MarkdownIt({
   html: true,
   linkify: true,
+  breaks: true,
   typographer: true,
 })
+
+// 禁用模糊链接（防止将文件名识别为链接）
+md.linkify.set({ fuzzyLink: false })
 
 // 插件：链接在新窗口打开
 md.use(mdLinkAttributes, {
@@ -87,7 +91,7 @@ const releaseDialogBody = ref('')
 // 打开日志对话框
 function showReleaseDialog(title: string, body: string) {
   releaseDialogTitle.value = title
-  releaseDialogBody.value = body ? md.render(body) : ''
+  releaseDialogBody.value = md.render(body || '')
   releaseDialog.value = true
 }
 
@@ -524,5 +528,10 @@ onMounted(() => {
 .markdown-body :deep(img) {
   max-width: 100%;
   height: auto;
+}
+
+.markdown-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 </style>
