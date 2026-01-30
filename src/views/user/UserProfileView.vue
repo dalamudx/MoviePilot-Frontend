@@ -132,6 +132,7 @@ async function fetchUserInfo() {
     if (result) {
       accountInfo.value = result
       accountInfo.value.avatar = accountInfo.value.avatar ? accountInfo.value.avatar : avatar1
+      accountInfo.value.nickname = accountInfo.value.settings?.nickname ?? ''
       currentUserName.value = accountInfo.value.name
       currentAvatar.value = accountInfo.value.avatar
       // 同时加载PassKey列表
@@ -161,12 +162,10 @@ async function saveAccountInfo() {
   }
 
   // 将nickname保存到settings中，后端可以直接处理JSON对象
-  if (accountInfo.value.nickname) {
-    if (!accountInfo.value.settings) {
-      accountInfo.value.settings = {}
-    }
-    accountInfo.value.settings.nickname = accountInfo.value.nickname
+  if (!accountInfo.value.settings) {
+    accountInfo.value.settings = {}
   }
+  accountInfo.value.settings.nickname = accountInfo.value.nickname ?? ''
 
   const oldUserName = accountInfo.value.name
   const oldAvatar = accountInfo.value.avatar
